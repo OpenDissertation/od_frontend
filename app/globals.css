@@ -66,6 +66,8 @@ body {
   padding: 18px 22px;
   line-height: 1.55;
   filter: drop-shadow(0 12px 20px rgba(0, 0, 0, 0.24));
+  overflow-wrap: anywhere;
+  word-break: normal;
 }
 .bubble p {
   margin: 0 0 10px;
@@ -77,13 +79,13 @@ body {
   align-self: flex-start;
   color: #0f172a;
   background: #c7d2fe;
-  border-radius: 44% 56% 48% 52% / 53% 45% 55% 47%;
+  border-radius: 22px 22px 22px 6px;
 }
 .bubble.user {
   align-self: flex-end;
   color: #111827;
   background: #fde68a;
-  border-radius: 55% 45% 52% 48% / 45% 58% 42% 55%;
+  border-radius: 22px 22px 6px 22px;
 }
 .bubble.system {
   align-self: center;

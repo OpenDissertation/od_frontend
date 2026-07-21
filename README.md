@@ -8,7 +8,7 @@ OpenDissertation is a Next.js JavaScript application that provides a guided chat
 
 ### Prerequisites
 
-- Node.js 22 or newer.
+- Node.js 24 or newer.
 - npm 10 or newer.
 - Docker and Docker Compose, if you want to run the app in containers.
 - A running OpenDissertation backend, or a local checkout of [`OpenDissertation/od_backend`](https://github.com/OpenDissertation/od_backend) at `./od_backend` when using the included Compose file.
@@ -26,7 +26,7 @@ npm install
 NEXT_PUBLIC_API_BASE_URL=http://localhost:8000 npm run dev
 ```
 
-Then open <http://localhost:3000>. The backend must be available at the URL configured in `NEXT_PUBLIC_API_BASE_URL`.
+Then open <http://localhost:3000>. Set `PORT` to expose a different frontend port, for example `PORT=4000 NEXT_PUBLIC_API_BASE_URL=http://localhost:8000 npm run dev`. The backend must be available at the URL configured in `NEXT_PUBLIC_API_BASE_URL`.
 
 ### Run locally with Docker Compose
 
@@ -34,10 +34,10 @@ Clone the backend beside this frontend before using Compose:
 
 ```bash
 git clone https://github.com/OpenDissertation/od_backend.git od_backend
-OPENAI_API_KEY=your-key docker compose up --build
+PORT=3000 OPENAI_API_KEY=your-key docker compose up --build
 ```
 
-The frontend is exposed at <http://localhost:3000>, and the backend is exposed at <http://localhost:8000>.
+The frontend is exposed at <http://localhost:3000> by default. Change `PORT` to publish a different frontend port, and keep the backend at <http://localhost:8000>.
 
 ### Build and run the production bundle locally
 
@@ -59,17 +59,19 @@ Build and run the frontend image:
 ```bash
 docker build -t opendissertation-frontend .
 docker run -p 3000:3000 \
+  -e PORT=3000 \
   -e NEXT_PUBLIC_API_BASE_URL=https://api.example.com \
   opendissertation-frontend
 ```
 
-Deploy the backend separately, configure CORS to allow the frontend origin, and provide the backend with required secrets such as `OPENAI_API_KEY`. For managed platforms, set `NEXT_PUBLIC_API_BASE_URL` at build time and expose port `3000` from the resulting container.
+Deploy the backend separately, configure CORS to allow the frontend origin, and provide the backend with required secrets such as `OPENAI_API_KEY`. For managed platforms, set `NEXT_PUBLIC_API_BASE_URL` at build time and set `PORT` to the platform-provided port when required.
 
 ### Platform deployment
 
 You can also deploy to any platform that supports Next.js, such as Vercel, Render, Fly.io, or AWS. Configure these environment variables in the platform dashboard:
 
 - `NEXT_PUBLIC_API_BASE_URL`: public URL of the OpenDissertation backend.
+- `PORT`: frontend HTTP port; defaults to `3000`.
 - Backend-only secrets, such as `OPENAI_API_KEY`, should be configured on the backend service only, not in this frontend app.
 
 ## Design choices
