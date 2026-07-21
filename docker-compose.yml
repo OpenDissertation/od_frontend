@@ -1,0 +1,20 @@
+services:
+  frontend:
+    build: .
+    ports:
+      - "${PORT:-3000}:${PORT:-3000}"
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8000
+      PORT: ${PORT:-3000}
+    depends_on:
+      - backend
+  backend:
+    # Assumes od_backend repo is cloned inside this od_frontend repo
+    build: ./od_backend
+    command: "uvicorn od_backend.main:app --host 0.0.0.0 --port 8000"
+    volumes:
+      - ./od_backend/src:/usr/src/app
+    ports:
+      - "8000:8000"
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
