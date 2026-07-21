@@ -2,30 +2,18 @@
 
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
-import { FormEvent, useMemo, useRef, useState } from "react";
-
-type Role = "assistant" | "user" | "system";
-type Phase = "collecting" | "downloading" | "chatting" | "confirming" | "ended";
-type Message = { role: Role; content: string };
-type DissertationResult = {
-  author: string;
-  institution: string;
-  status: "downloaded" | "not_found" | "failed";
-  file_path?: string;
-  title?: string;
-  detail?: string;
-};
+import { useMemo, useRef, useState } from "react";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 const supportedInstitutions = ["Princeton University", "UNSW"];
-const normalizedInstitutions: Record<string, string> = {
+const normalizedInstitutions = {
   "princeton university": "Princeton University",
   unsw: "UNSW",
   "university of new south wales": "UNSW",
 };
 
-function normalizeInstitution(institution: string) {
+function normalizeInstitution(institution) {
   return (
     normalizedInstitutions[
       institution.toLowerCase().replace(/\s+/g, " ").trim()
@@ -33,7 +21,7 @@ function normalizeInstitution(institution: string) {
   );
 }
 
-function parseSelections(text: string) {
+function parseSelections(text) {
   return text
     .split(/\n|;/)
     .map((entry) => entry.trim())
@@ -47,7 +35,7 @@ function parseSelections(text: string) {
     });
 }
 
-async function apiFetch<T>(path: string, init: RequestInit): Promise<T> {
+async function apiFetch(path, init) {
   const response = await fetch(`${API_BASE}${path}`, {
     ...init,
     headers: { "Content-Type": "application/json", ...(init.headers || {}) },
@@ -62,11 +50,11 @@ async function apiFetch<T>(path: string, init: RequestInit): Promise<T> {
     }
     throw new Error(detail);
   }
-  return response.json() as Promise<T>;
+  return response.json();
 }
 
 export default function Home() {
-  const [messages, setMessages] = useState<Message[]>([
+  const [messages, setMessages] = useState([
     {
       role: "assistant",
       content:
@@ -74,10 +62,10 @@ export default function Home() {
     },
   ]);
   const [input, setInput] = useState("");
-  const [phase, setPhase] = useState<Phase>("collecting");
+  const [phase, setPhase] = useState("collecting");
   const [sessionId, setSessionId] = useState("");
   const [busy, setBusy] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef(null);
 
   const placeholder = useMemo(() => {
     if (phase === "collecting") return "Ada Lovelace - Princeton University";
@@ -88,7 +76,7 @@ export default function Home() {
     return "This OpenDissertation session has ended.";
   }, [phase]);
 
-  function append(message: Message) {
+  function append(message) {
     setMessages((current) => [...current, message]);
     setTimeout(
       () =>
@@ -100,7 +88,7 @@ export default function Home() {
     );
   }
 
-  async function handleCollecting(text: string) {
+  async function handleCollecting(text) {
     const dissertations = parseSelections(text);
     const invalid = dissertations.filter((item) => !item.institution);
     if (!dissertations.length || invalid.length) {
@@ -117,13 +105,10 @@ export default function Home() {
       content:
         "I am downloading the dissertation files now. This may take a moment...",
     });
-    const download = await apiFetch<{ results: DissertationResult[] }>(
-      "/api/v1/dissertations/download",
-      {
-        method: "POST",
-        body: JSON.stringify({ dissertations }),
-      },
-    );
+    const download = await apiFetch("/api/v1/dissertations/download", {
+      method: "POST",
+      body: JSON.stringify({ dissertations }),
+    });
     const downloaded = download.results.filter(
       (result) => result.status === "downloaded" && result.file_path,
     );
@@ -178,8 +163,8 @@ export default function Home() {
     });
   }
 
-  async function handleChatting(text: string) {
-    const reply = await apiFetch<{ answer: string }>("/api/v1/chat", {
+  async function handleChatting(text) {
+    const reply = await apiFetch("/api/v1/chat", {
       method: "POST",
       body: JSON.stringify({ session_id: sessionId, question: text }),
     });
@@ -190,7 +175,7 @@ export default function Home() {
     });
   }
 
-  async function handleConfirming(text: string) {
+  async function handleConfirming(text) {
     if (/\b(no|nothing|done|quit|exit|goodbye)\b/i.test(text)) {
       await terminateSession();
       return;
@@ -199,7 +184,7 @@ export default function Home() {
     await handleChatting(text);
   }
 
-  async function onSubmit(event: FormEvent<HTMLFormElement>) {
+  async function onSubmit(event) {
     event.preventDefault();
     const text = input.trim();
     if (!text || busy || phase === "ended") return;
