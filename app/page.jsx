@@ -58,7 +58,7 @@ export default function Home() {
     {
       role: "assistant",
       content:
-        "Welcome to OpenDissertation. Please specify the authors and institutions whose PhD dissertations you want to learn more about. I currently support Princeton University and UNSW. Use one line per author, for example: `Jane Doe - Princeton University`.",
+        "Welcome to OpenDissertation. Please specify the author(s) and institution(s) whose PhD dissertation(s) you want to learn more about. I currently support Princeton University (2011 - 2015) and University of New South Wales (UNSW). Use one line per author, for example: `Jane Doe - Princeton University`.",
     },
   ]);
   const [input, setInput] = useState("");
@@ -94,7 +94,7 @@ export default function Home() {
     if (!dissertations.length || invalid.length) {
       append({
         role: "assistant",
-        content: `Please provide authors with a supported institution: ${supportedInstitutions.join(" or ")}. Example: \`Author Name - UNSW\`.`,
+        content: `Please provide author(s) with supported institution(s): ${supportedInstitutions.join(" or ")}. Example: \`Author Name - UNSW\`.`,
       });
       return;
     }
@@ -103,7 +103,7 @@ export default function Home() {
     append({
       role: "assistant",
       content:
-        "I am downloading the dissertation files now. This may take a moment...",
+        "I am downloading the dissertation file(s) now. This may take a moment...",
     });
     const download = await apiFetch("/api/v1/dissertations/download", {
       method: "POST",
@@ -149,7 +149,7 @@ export default function Home() {
         .map((item) => item.title || item.author)
         .join(
           "; ",
-        )}. What details about the dissertations would you like to learn more about?`,
+        )}. What details about the dissertation(s) would you like to learn more about?`,
     });
   }
 
