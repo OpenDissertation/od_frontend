@@ -9,11 +9,11 @@ services:
     depends_on:
       - backend
   backend:
-    image: python:3.12-slim
-    working_dir: /app
-    command: sh -c "pip install -e . && uvicorn od_backend.main:app --host 0.0.0.0 --port 8000"
+    # Assumes od_backend repo is cloned inside this od_frontend repo
+    build: ./od_backend
+    command: "uvicorn od_backend.main:app --host 0.0.0.0 --port 8000"
     volumes:
-      - ./od_backend:/app
+      - ./od_backend/src:/usr/src/app
     ports:
       - "8000:8000"
     environment:

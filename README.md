@@ -30,7 +30,7 @@ Then open <http://localhost:3000>. Set `PORT` to expose a different frontend por
 
 ### Run locally with Docker Compose
 
-Clone the backend beside this frontend before using Compose:
+Clone the backend repo inside this frontend repo before using Compose:
 
 ```bash
 git clone https://github.com/OpenDissertation/od_backend.git od_backend
