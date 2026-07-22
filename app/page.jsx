@@ -4,8 +4,7 @@ import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import { useMemo, useRef, useState } from "react";
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+const API_BASE = "";
 const supportedInstitutions = ["Princeton University", "UNSW"];
 const normalizedInstitutions = {
   "princeton university": "Princeton University",

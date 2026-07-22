@@ -23,10 +23,10 @@ npm install
 ### Run locally in development mode
 
 ```bash
-NEXT_PUBLIC_API_BASE_URL=http://localhost:8000 npm run dev
+BACKEND_API_BASE_URL=http://localhost:8000 npm run dev
 ```
 
-Then open <http://localhost:3000>. Set `PORT` to expose a different frontend port, for example `PORT=4000 NEXT_PUBLIC_API_BASE_URL=http://localhost:8000 npm run dev`. The backend must be available at the URL configured in `NEXT_PUBLIC_API_BASE_URL`.
+Then open <http://localhost:3000>. Set `PORT` to expose a different frontend port, for example `PORT=4000 BACKEND_API_BASE_URL=http://localhost:8000 npm run dev`. The frontend proxies browser requests through its own `/api/v1/*` routes, so the backend must be available to the frontend server at the URL configured in `BACKEND_API_BASE_URL`.
 
 ### Run locally with Docker Compose
 
@@ -46,7 +46,7 @@ npm run build
 npm start
 ```
 
-If you run the production bundle locally, set `NEXT_PUBLIC_API_BASE_URL` before building so the client points at the correct backend.
+If you run the production bundle locally, set `BACKEND_API_BASE_URL` at runtime so the Next.js proxy can reach the backend service.
 
 ## Production deployment
 
@@ -60,17 +60,17 @@ Build and run the frontend image:
 docker build -t opendissertation-frontend .
 docker run -p 3000:3000 \
   -e PORT=3000 \
-  -e NEXT_PUBLIC_API_BASE_URL=https://api.example.com \
+  -e BACKEND_API_BASE_URL=https://api.example.com \
   opendissertation-frontend
 ```
 
-Deploy the backend separately, configure CORS to allow the frontend origin, and provide the backend with required secrets such as `OPENAI_API_KEY`. For managed platforms, set `NEXT_PUBLIC_API_BASE_URL` at build time and set `PORT` to the platform-provided port when required.
+Deploy the backend separately and provide it with required secrets such as `OPENAI_API_KEY`. For managed platforms such as Cloud Run, set `BACKEND_API_BASE_URL` on the frontend service at runtime and set `PORT` to the platform-provided port when required. Browser API calls stay same-origin by going through the frontend proxy, so the backend URL is not baked into the client bundle.
 
 ### Platform deployment
 
 You can also deploy to any platform that supports Next.js, such as Vercel, Render, Fly.io, or AWS. Configure these environment variables in the platform dashboard:
 
-- `NEXT_PUBLIC_API_BASE_URL`: public URL of the OpenDissertation backend.
+- `BACKEND_API_BASE_URL`: URL of the OpenDissertation backend, read by the frontend server at runtime. `NEXT_PUBLIC_API_BASE_URL` is still accepted as a fallback for existing deployments.
 - `PORT`: frontend HTTP port; defaults to `3000`.
 - Backend-only secrets, such as `OPENAI_API_KEY`, should be configured on the backend service only, not in this frontend app.
 
@@ -80,7 +80,7 @@ You can also deploy to any platform that supports Next.js, such as Vercel, Rende
 - **Next.js App Router:** the application uses the `app/` directory for a modern, compact Next.js structure.
 - **Client-side chat state machine:** the page manages the dissertation selection, download, session initialization, Q&A, follow-up confirmation, and session termination flow in one visible component.
 - **Markdown rendering:** backend answers are rendered with `react-markdown` so ChatGPT-style responses display lists, emphasis, and links cleanly.
-- **Configurable backend URL:** `NEXT_PUBLIC_API_BASE_URL` lets local, staging, and production deployments point at different backend services.
+- **Runtime backend proxy:** browser requests use same-origin `/api/v1/*` routes, and the frontend server forwards them to `BACKEND_API_BASE_URL` so container runtime environment variables work on Cloud Run.
 - **Standalone container output:** `next.config.js` enables a small production image that runs with `node server.js`.
 - **Space-themed responsive UI:** CSS creates the requested outer-space visual style, asteroid-like chat bubbles, and mobile-friendly layout without requiring image-heavy assets.
 
@@ -93,7 +93,8 @@ You can also deploy to any platform that supports Next.js, such as Vercel, Rende
 - `README.md` — project overview, local setup, deployment, design notes, file guide, and contribution guidance.
 - `app/globals.css` — global styles for the space-themed responsive chat UI.
 - `app/layout.jsx` — root Next.js layout and site metadata.
-- `app/page.jsx` — main OpenDissertation chat interface and backend API integration.
+- `app/page.jsx` — main OpenDissertation chat interface and same-origin frontend API integration.
+- `app/api/v1/[...path]/route.js` — server-side proxy that forwards frontend API requests to the configured backend URL.
 - `docker-compose.yml` — local orchestration for frontend plus a mounted backend checkout.
 - `eslint.config.mjs` — ESLint flat configuration using Next.js core web vitals rules.
 - `next.config.js` — Next.js configuration, including standalone output and backend URL exposure.
